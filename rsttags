@@ -1,0 +1,86 @@
+#!/usr/bin/python3
+# Copyright by Kenneth Lee, 2023. All Right Reserved.
+#
+# A python script to general vi tags for sphinx project
+
+import sys
+import os
+import re
+
+header = """\
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Kenneth Lee	/Kenneth-Lee-2012@qq.com/
+!_TAG_PROGRAM_NAME	rsttags	//
+!_TAG_PROGRAM_VERSION	0.1 //
+"""
+
+matchers = [
+        [re.compile(r':index:\s*(\w+)'), 'i'],
+        [re.compile(r'.. index::\s*(\w+)'), 'i']
+]
+
+def is_separator(line, last_line):
+    if not line or not last_line:
+        return False
+
+    if len(line) >= len(last_line):
+        c = line[0]
+        for i in line[1:]:
+            if c != i:
+                return False
+        return True
+
+    return False
+
+def get_tags(fn):
+    tags=[]
+    title = None
+    last_line = None
+    with open(fn, "r") as lines:
+        for l in lines:
+            if l[-1] == "\n":
+                l = l[0:-1]
+
+            if not title:
+                if is_separator(l, last_line):
+                    title = last_line;
+                last_line = l
+                
+            # I don't consider there are more than 1 in one line
+            global matchers
+            for m,t in matchers:
+                pat = m.search(l)
+                if pat:
+                    if title:
+                        comment = t + " " + title
+                    else:
+                        comment = t
+                    tags.append([pat.group(1), fn, l, comment])
+
+    return tags
+
+def main():
+    tags=[]
+    if (len(sys.argv) != 2) or \
+       (not os.path.isdir(sys.argv[1])):
+        print("usage: %s <src dir>"%(sys.argv[0]), file=sys.stderr)
+        sys.exit(-1);
+
+    for r,ds,fs in os.walk(sys.argv[1], topdown=True):
+        for f in fs:
+            if f.endswith(".rst"):
+                tags.extend(get_tags(r + "/" + f))
+
+    tags.sort()
+
+    with open('tags', "w") as file:
+        global header
+        file.write(header)
+        for r in tags:
+            file.write(r[0] + '\t' + r[1] + '\t/^' + r[2] + '$/;" ' + r[3] + '\n')
+
+if __name__ == "__main__":
+    main()
+
+# vim: set ft=python
