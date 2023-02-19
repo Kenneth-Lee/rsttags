@@ -16,8 +16,9 @@ header = """\
 """
 
 matchers = [
-        [re.compile(r':index:\s*(\w+)'), 'i'],
-        [re.compile(r'.. index::\s*(\w+)'), 'i']
+        [re.compile(r':index:\s*`?(\w+)`?'), 'i'],
+        [re.compile(r'.. index::\s*(\w+)'), 'i'],
+        [re.compile(r':dtag:`?\s*(\w+)`?'), 'd']
 ]
 
 def is_separator(line, last_line):
@@ -42,21 +43,19 @@ def get_tags(fn):
             if l[-1] == "\n":
                 l = l[0:-1]
 
-            if not title:
-                if is_separator(l, last_line):
-                    title = last_line;
-                last_line = l
+            # get the nearest title
+            if is_separator(l, last_line):
+                title = last_line;
+            last_line = l
                 
-            # I don't consider there are more than 1 in one line
+            # I don't consider there are more than same tag in one line
             global matchers
             for m,t in matchers:
                 pat = m.search(l)
                 if pat:
                     if title:
-                        comment = t + " " + title
-                    else:
-                        comment = t
-                    tags.append([pat.group(1), fn, l, comment])
+                        t = t + " " + title
+                    tags.append([pat.group(1), fn, l, t])
 
     return tags
 
