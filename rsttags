@@ -17,11 +17,15 @@ header = """\
 """
 
 matchers = [
-        [re.compile(r':index:\s*`?(\w+)`?'), 'i'],  # index(role)
+        [re.compile(r':index:\s*`(.+)`'), 'i'],     # index(role) with ``
+        [re.compile(r':index:\s*(\w+)'), 'i'],      # index(role) without ``
         [re.compile(r'.. index::\s*(\w+)'), 'i'],   # index(directive)
-        [re.compile(r':dtag:`?\s*(\w+)`?'), 'd'],   # dtag
-        [re.compile(r'.. _`(\w+)`:'), 'l'],         # link
-        [re.compile(r':ref:`.+<(\w+)>`'), 'r']      # ref
+        [re.compile(r':dtag:\s*`(.+)`'), 'd'],      # dtag with ``
+        [re.compile(r':dtag:\s*(\w+)'), 'd'],       # dtag without ``
+        [re.compile(r'.. _`(.+)`:'), 'l'],          # link
+        [re.compile(r'.. _([^`]+):'), 'l'],         # link
+        [re.compile(r':ref:`.+<(.+)>`'), 'r'],      # ref with <>
+        [re.compile(r':ref:`(.+)`'), 'r']           # ref without <>
 ]
 
 class TitleChecker:
