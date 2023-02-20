@@ -6,6 +6,7 @@
 import sys
 import os
 import re
+import argparse
 
 header = """\
 !_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
@@ -46,7 +47,7 @@ class TitleChecker:
         return self.cur_title, new_title
 
 def get_tags(fn):
-    tags=[]
+    tags=[] #tags record: name, filename, line, type, comment
     title = None
     new_title = None
     file_title = None
@@ -61,7 +62,7 @@ def get_tags(fn):
                 file_title = title
 
             if new_title:
-                    tags.append([new_title.strip(), fn, new_title, 't'])
+                    tags.append([new_title.strip(), fn, new_title, 't', None])
                     continue
                 
             # I don't consider there are more than same tag in one line
@@ -69,23 +70,33 @@ def get_tags(fn):
             for m,t in matchers:
                 pat = m.search(l)
                 if pat:
-                    if title:
-                        t = t + " " + title
-                    tags.append([pat.group(1), fn, l, t])
+                    tags.append([pat.group(1), fn, l, t, title])
 
     return tags
 
 def main():
-    tags=[]
-    if (len(sys.argv) != 2) or \
-       (not os.path.isdir(sys.argv[1])):
-        print("usage: %s <src dir>"%(sys.argv[0]), file=sys.stderr)
-        sys.exit(-1);
+    argvp = argparse.ArgumentParser(description="A Sphinx Tags Generator")
+    argvp.add_argument('-type-before-name', '-t',
+            action = 'store_true',
+            help = 'put type before the tag name')
+    argvp.add_argument('dirs', nargs='*', type=str, help='source directory')
+    args = argvp.parse_args()
 
-    for r,ds,fs in os.walk(sys.argv[1], topdown=True):
-        for f in fs:
-            if f.endswith(".rst"):
-                tags.extend(get_tags(r + "/" + f))
+    if len(args.dirs) == 1:
+        tgts = ['.']
+    else:
+        tgts = args.dirs[1:]
+
+    tags=[]
+    for tgt in tgts:
+        for r,ds,fs in os.walk(tgt, topdown=True):
+            for f in fs:
+                if f.endswith(".rst"):
+                    tags.extend(get_tags(r + "/" + f))
+
+    if args.type_before_name:
+        for r in tags:
+            r[0] = r[3] + "_" + r[0]
 
     tags.sort()
 
@@ -93,7 +104,12 @@ def main():
         global header
         file.write(header)
         for r in tags:
-            file.write(r[0] + '\t' + r[1] + '\t/^' + r[2] + '$/;" ' + r[3] + '\n')
+            file.write(r[0] + '\t' + r[1] + '\t/^' + r[2] + '$/;"\t' + r[3])
+
+            if r[4]:
+                file.write('\t' + r[4] + '\n')
+            else:
+                file.write('\n')
 
 if __name__ == "__main__":
     main()
