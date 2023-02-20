@@ -21,20 +21,13 @@ New requirements are welcomed.
 
 There some tag types are used. They are:
 
-i
-: index (match :index:`xxx` or .. index:: xxx)
+```
+i: index (match :index:`xxx` or .. index:: xxx)
+d: dtag (match :dtag:`xxx`)
+t: title (match chapter title)
+l: link (match .. _`xxx`:)
+r: reference (match :ref:`xxx`)
+```
 
-d
-: dtag (match :dtag:`xxx`)
-
-t
-: title (match chapter title)
-
-l
-: link (match .. _`xxx`)
-
-r
-: reference (match :ref:`xxx`)
-
-
--t option can be use to add a type prefix to tag name. E.g. you want to r_ and d_ to your tags name, use this command: `rsttags -t rd`
+-t option can be use to add type prefixes to tag names.  E.g. you want to add
+r_ and d_ to your tags name, use this command: `rsttags -t rd`
