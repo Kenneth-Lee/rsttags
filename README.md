@@ -16,5 +16,25 @@ New requirements are welcomed.
 2. copy the rsttags file to the the path that you can run it. (such as ~/bin or
    /usr/local/bin)
 3. run the follow command in the directory you want to generate tags file:
+   `rsttags`. you can specific 0 or more directory as input. If no direcory is
+   specific, current directory is used.
 
-   ```rsttags <dir_to_sphinx_source>```
+There some tag types are used. They are:
+
+i
+: index (match :index:`xxx` or .. index:: xxx)
+
+d
+: dtag (match :dtag:`xxx`)
+
+t
+: title (match chapter title)
+
+l
+: link (match .. _`xxx`)
+
+r
+: reference (match :ref:`xxx`)
+
+
+-t option can be use to add a type prefix to tag name. E.g. you want to r_ and d_ to your tags name, use this command: `rsttags -t rd`

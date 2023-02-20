@@ -21,7 +21,7 @@ matchers = [
         [re.compile(r'.. index::\s*(\w+)'), 'i'],   # index(directive)
         [re.compile(r':dtag:`?\s*(\w+)`?'), 'd'],   # dtag
         [re.compile(r'.. _`(\w+)`:'), 'l'],         # link
-        [re.compile(r':ref:`.+<(\w+)>`'), 'r']    # ref
+        [re.compile(r':ref:`.+<(\w+)>`'), 'r']      # ref
 ]
 
 class TitleChecker:
@@ -77,8 +77,9 @@ def get_tags(fn):
 def main():
     argvp = argparse.ArgumentParser(description="A Sphinx Tags Generator")
     argvp.add_argument('-type-before-name', '-t',
-            action = 'store_true',
-            help = 'put type before the tag name')
+            nargs = 1,
+            type = str,
+            help = 'set a list of types to be added as prefix to tag name (valid types: idlrt)')
     argvp.add_argument('dirs', nargs='*', type=str, help='source directory')
     args = argvp.parse_args()
 
@@ -96,7 +97,8 @@ def main():
 
     if args.type_before_name:
         for r in tags:
-            r[0] = r[3] + "_" + r[0]
+            if args.type_before_name[0].find(r[3]) != -1:
+                r[0] = r[3] + "_" + r[0]
 
     tags.sort()
 
