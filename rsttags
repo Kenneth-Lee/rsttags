@@ -21,32 +21,46 @@ matchers = [
         [re.compile(r':dtag:`?\s*(\w+)`?'), 'd']
 ]
 
-def is_separator(line, last_line):
-    if not line or not last_line:
-        return False
+class TitleChecker:
+    def __init__(self):
+        self.last_line = None;
+        self.cur_title = None;
 
-    if len(line) >= len(last_line):
-        c = line[0]
-        for i in line[1:]:
-            if c != i:
-                return False
-        return True
+    def parse_line(self, line):
+        "return current_title and a new found title"
+        new_title = None
+        is_sep = True
+        if line and self.last_line and len(line) >= len(self.last_line):
+            c = line[0]
+            for i in line[1:]:
+                if c != i:
+                    is_sep = False
+                    break;
+            if is_sep:
+                self.cur_title = self.last_line
+                new_title = self.last_line
 
-    return False
+        self.last_line = line
+        return self.cur_title, new_title
 
 def get_tags(fn):
     tags=[]
     title = None
-    last_line = None
+    new_title = None
+    file_title = None
+    title_checker = TitleChecker()
     with open(fn, "r") as lines:
         for l in lines:
             if l[-1] == "\n":
                 l = l[0:-1]
 
-            # get the nearest title
-            if is_separator(l, last_line):
-                title = last_line;
-            last_line = l
+            title, new_title = title_checker.parse_line(l)
+            if not file_title:
+                file_title = title
+
+            if new_title:
+                    tags.append([new_title.strip(), fn, new_title, 't'])
+                    continue
                 
             # I don't consider there are more than same tag in one line
             global matchers
