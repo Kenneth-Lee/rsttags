@@ -27,6 +27,8 @@ matchers = [
         [re.compile(r':ref:`(.+)`'), 'r']           # ref without <>
 ]
 
+all_types = 'dfilrsD'
+
 class TitleChecker:
     def __init__(self):
         self.last_line = None;
@@ -53,14 +55,14 @@ class TitleChecker:
         self.last_line = line
         return self.cur_title, new_title
 
-def get_tags(fn, add_fn=False):
+def get_tags(fn, types):
     tags=[] #tags record: name, filename, line, type, comment
     title = None
     new_title = None
     file_title = None
     title_checker = TitleChecker()
 
-    if add_fn:
+    if 'f' in types:
         tags.append([os.path.basename(fn), fn, None, 'f', fn])
 
     with open(fn, "r") as lines:
@@ -68,17 +70,21 @@ def get_tags(fn, add_fn=False):
             if l[-1] == "\n":
                 l = l[0:-1]
 
-            title, new_title = title_checker.parse_line(l)
-            if not file_title:
-                file_title = title
+            if 's' in types:
+                title, new_title = title_checker.parse_line(l)
+                if not file_title:
+                    file_title = title
 
-            if new_title:
-                    tags.append([new_title.strip(), fn, new_title, 's', None])
-                    continue
+                if new_title:
+                        tags.append([new_title.strip(), fn, new_title, 's', None])
+                        continue
                 
             # I don't consider there are more than same tag in one line
             global matchers
             for m,t in matchers:
+                if not t in types:
+                    continue
+
                 pat = m.search(l)
                 if pat:
                     tags.append([pat.group(1), fn, l, t, title])
@@ -90,10 +96,11 @@ def main():
     argvp.add_argument('--type-before-name', '-t',
             nargs = 1,
             type = str,
-            help = 'set a list of types to be added as prefix to tag name (valid types: idlrt)')
-    argvp.add_argument('-filename-as-tag', '-f',
-            action = "store_true",
-            help = 'take filename as tag')
+            help = 'set a list of types to be added as prefix to tag name (valid types: ' + all_types + ')')
+    argvp.add_argument('--types', '-T',
+            nargs = 1,
+            type = str,
+            help = 'set a list of types to find (valid types: same as -t)')
     argvp.add_argument('dirs', nargs='*', type=str, help='source directory')
     args = argvp.parse_args()
 
@@ -102,16 +109,21 @@ def main():
     else:
         tgts = ['.']
 
+    if args.types:
+        types = args.types[0]
+    else:
+        types = all_types
+
     tags=[]
     for tgt in tgts:
         if os.path.isdir(tgt):
             for r,ds,fs in os.walk(tgt, topdown=True):
                 for f in fs:
                     if f.endswith(".rst"):
-                        tags.extend(get_tags(r + "/" + f, args.filename_as_tag))
+                        tags.extend(get_tags(r + "/" + f, types))
         elif os.path.isfile(tgt):
             if tgt.endswith(".rst"):
-                tags.extend(get_tags(tgt, args.filename_as_tag))
+                tags.extend(get_tags(tgt, types))
 
     if args.type_before_name:
         for r in tags:

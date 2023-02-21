@@ -31,7 +31,14 @@ r: reference (match :ref:`xxx`)
 s: section name
 ```
 
--t option can be use to add type prefixes to tag names.  E.g. you want to add
-r_ and d_ to your tags name, use this command: `rsttags -t rd`.
-
--f option is for add filename as tag.
+This is options supported:
+```
+  -t
+  --type-before-name
+      Add type prefixes to tag names. So a section xxx will
+      become s_xxx. default is "idDflrs".
+  
+  -T
+  --types
+     Set tags types. Default is "idDflrs".
+```
