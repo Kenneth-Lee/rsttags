@@ -87,7 +87,11 @@ def get_tags(fn, types):
 
                 pat = m.search(l)
                 if pat:
-                    tags.append([pat.group(1), fn, l, t, title])
+                    tag = pat.group(1).strip()
+                    if t == 'd':
+                        tags.append([os.path.basename(tag), fn, l, t, title])
+                    else:
+                        tags.append([tag, fn, l, t, title])
 
     return tags
 

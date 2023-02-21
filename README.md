@@ -31,7 +31,7 @@ r: reference (match :ref:`xxx`)
 s: section name
 ```
 
-This is options supported:
+These are supported options:
 ```
   -t
   --type-before-name
