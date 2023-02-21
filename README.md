@@ -23,11 +23,15 @@ There some tag types are used. They are:
 
 ```
 i: index (match :index:`xxx` or .. index:: xxx)
-d: dtag (match :dtag:`xxx`)
-t: title (match chapter title)
-l: link (match .. _`xxx`:)
+d: doc (match :doc:`xxx`)
+D: dtag (match :dtag:`xxx`)
+f: filename
+l: link (match .. _`xxx`: or .. _xxx:)
 r: reference (match :ref:`xxx`)
+t: title (match chapter title)
 ```
 
 -t option can be use to add type prefixes to tag names.  E.g. you want to add
-r_ and d_ to your tags name, use this command: `rsttags -t rd`
+r_ and d_ to your tags name, use this command: `rsttags -t rd`.
+
+-f option is for add filename as tag.

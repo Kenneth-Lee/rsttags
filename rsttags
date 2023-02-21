@@ -17,11 +17,10 @@ header = """\
 """
 
 matchers = [
-        [re.compile(r':index:\s*`(.+)`'), 'i'],     # index(role) with ``
-        [re.compile(r':index:\s*(\w+)'), 'i'],      # index(role) without ``
-        [re.compile(r'.. index::\s*(\w+)'), 'i'],   # index(directive)
-        [re.compile(r':dtag:\s*`(.+)`'), 'd'],      # dtag with ``
-        [re.compile(r':dtag:\s*(\w+)'), 'd'],       # dtag without ``
+        [re.compile(r':index:`(.+)`'), 'i'],        # index(role)
+        [re.compile(r'.. index::\s*([a-z0-9 -_]+)\s*'), 'i'],   # index(directive)
+        [re.compile(r':doc:`(.+)`'), 'd'],          # doc
+        [re.compile(r':dtag:`(.+)`'), 'D'],         # dtag with ``
         [re.compile(r'.. _`(.+)`:'), 'l'],          # link
         [re.compile(r'.. _([^`]+):'), 'l'],         # link
         [re.compile(r':ref:`.+<(.+)>`'), 'r'],      # ref with <>
@@ -50,12 +49,16 @@ class TitleChecker:
         self.last_line = line
         return self.cur_title, new_title
 
-def get_tags(fn):
+def get_tags(fn, add_fn=False):
     tags=[] #tags record: name, filename, line, type, comment
     title = None
     new_title = None
     file_title = None
     title_checker = TitleChecker()
+
+    if add_fn:
+        tags.append([os.path.basename(fn), fn, None, 'f', fn])
+
     with open(fn, "r") as lines:
         for l in lines:
             if l[-1] == "\n":
@@ -80,10 +83,13 @@ def get_tags(fn):
 
 def main():
     argvp = argparse.ArgumentParser(description="A Sphinx Tags Generator")
-    argvp.add_argument('-type-before-name', '-t',
+    argvp.add_argument('--type-before-name', '-t',
             nargs = 1,
             type = str,
             help = 'set a list of types to be added as prefix to tag name (valid types: idlrt)')
+    argvp.add_argument('-filename-as-tag', '-f',
+            action = "store_true",
+            help = 'take filename as tag')
     argvp.add_argument('dirs', nargs='*', type=str, help='source directory')
     args = argvp.parse_args()
 
@@ -94,10 +100,14 @@ def main():
 
     tags=[]
     for tgt in tgts:
-        for r,ds,fs in os.walk(tgt, topdown=True):
-            for f in fs:
-                if f.endswith(".rst"):
-                    tags.extend(get_tags(r + "/" + f))
+        if os.path.isdir(tgt):
+            for r,ds,fs in os.walk(tgt, topdown=True):
+                for f in fs:
+                    if f.endswith(".rst"):
+                        tags.extend(get_tags(r + "/" + f, args.filename_as_tag))
+        elif os.path.isfile(tgt):
+            if tgt.endswith(".rst"):
+                tags.extend(get_tags(tgt, args.filename_as_tag))
 
     if args.type_before_name:
         for r in tags:
@@ -110,7 +120,10 @@ def main():
         global header
         file.write(header)
         for r in tags:
-            file.write(r[0] + '\t' + r[1] + '\t/^' + r[2] + '$/;"\t' + r[3])
+            if r[2]:
+                file.write(r[0] + '\t' + r[1] + '\t/^' + r[2] + '$/;"\t' + r[3])
+            else:
+                file.write(r[0] + '\t' + r[1] + '\t0;"\t' + r[3])
 
             if r[4]:
                 file.write('\t' + r[4] + '\n')
