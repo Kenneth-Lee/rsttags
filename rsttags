@@ -38,7 +38,7 @@ class TitleChecker:
         is_sep = True
         if line and self.last_line and len(line) >= len(self.last_line):
             c = line[0]
-            if c:
+            if c in '=-`:\'"~^_*+#<>':
                 for i in line[1:]:
                     if c != i:
                         is_sep = False
@@ -73,7 +73,7 @@ def get_tags(fn, add_fn=False):
                 file_title = title
 
             if new_title:
-                    tags.append([new_title.strip(), fn, new_title, 't', None])
+                    tags.append([new_title.strip(), fn, new_title, 's', None])
                     continue
                 
             # I don't consider there are more than same tag in one line

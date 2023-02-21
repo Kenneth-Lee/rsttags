@@ -16,8 +16,8 @@ New requirements are welcomed.
 2. copy the rsttags file to the the path that you can run it. (such as ~/bin or
    /usr/local/bin)
 3. run the follow command in the directory you want to generate tags file:
-   `rsttags`. you can specific 0 or more directory as input. If no direcory is
-   specific, current directory is used.
+   `rsttags`. you can specific 0 or more directory or rst file as input. If no
+   direcory is specific, current directory is used.
 
 There some tag types are used. They are:
 
@@ -28,7 +28,7 @@ D: dtag (match :dtag:`xxx`)
 f: filename
 l: link (match .. _`xxx`: or .. _xxx:)
 r: reference (match :ref:`xxx`)
-t: title (match chapter title)
+s: section name
 ```
 
 -t option can be use to add type prefixes to tag names.  E.g. you want to add
