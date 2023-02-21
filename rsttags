@@ -18,11 +18,11 @@ header = """\
 
 matchers = [
         [re.compile(r':index:`(.+)`'), 'i'],        # index(role)
-        [re.compile(r'.. index::\s*([a-z0-9 -_]+)\s*'), 'i'],   # index(directive)
+        [re.compile(r'\.\. index::\s*(\w+[a-z0-9 -_]+)'), 'i'],   # index(directive)
         [re.compile(r':doc:`(.+)`'), 'd'],          # doc
         [re.compile(r':dtag:`(.+)`'), 'D'],         # dtag with ``
-        [re.compile(r'.. _`(.+)`:'), 'l'],          # link
-        [re.compile(r'.. _([^`]+):'), 'l'],         # link
+        [re.compile(r'\.\. _`(.+)`:'), 'l'],        # link
+        [re.compile(r'\.\. _([^`]+):'), 'l'],       # link
         [re.compile(r':ref:`.+<(.+)>`'), 'r'],      # ref with <>
         [re.compile(r':ref:`(.+)`'), 'r']           # ref without <>
 ]
@@ -38,10 +38,14 @@ class TitleChecker:
         is_sep = True
         if line and self.last_line and len(line) >= len(self.last_line):
             c = line[0]
-            for i in line[1:]:
-                if c != i:
-                    is_sep = False
-                    break;
+            if c:
+                for i in line[1:]:
+                    if c != i:
+                        is_sep = False
+                        break
+            else:
+                is_sep = False
+
             if is_sep:
                 self.cur_title = self.last_line
                 new_title = self.last_line
